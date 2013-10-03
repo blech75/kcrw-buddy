@@ -349,8 +349,8 @@
         head = document.getElementsByTagName('head')[0];
 
         if (navigator.platform === 'iPad') {
-            portrait = pixelRatio === 2 ? 'img/startup/startup-tablet-portrait-retina.png' : 'img/startup/startup-tablet-portrait.png';
-            landscape = pixelRatio === 2 ? 'img/startup/startup-tablet-landscape-retina.png' : 'img/startup/startup-tablet-landscape.png';
+            portrait = pixelRatio === 2 ? 'assets/img/startup-tablet-portrait-retina.png' : 'assets/img/startup-tablet-portrait.png';
+            landscape = pixelRatio === 2 ? 'assets/img/startup-tablet-landscape-retina.png' : 'assets/img/startup-tablet-landscape.png';
 
             link1 = document.createElement('link');
             link1.setAttribute('rel', 'apple-touch-startup-image');
@@ -364,8 +364,8 @@
             link2.setAttribute('href', landscape);
             head.appendChild(link2);
         } else {
-            portrait = pixelRatio === 2 ? "img/startup/startup-retina.png" : "img/startup/startup.png";
-            portrait = screen.height === 568 ? "img/startup/startup-retina-4in.png" : portrait;
+            portrait = pixelRatio === 2 ? "assets/img/startup-retina.png" : "assets/img/startup.png";
+            portrait = screen.height === 568 ? "assets/img/startup-retina-4in.png" : portrait;
             link1 = document.createElement('link');
             link1.setAttribute('rel', 'apple-touch-startup-image');
             link1.setAttribute('href', portrait);
