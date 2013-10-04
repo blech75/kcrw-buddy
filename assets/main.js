@@ -123,10 +123,19 @@ var KCRWBuddy = (function(){
     }
   }
 
+  function handleAlbumArtClick() {
+    // stop the timer before we refresh the data
+    clearTimeout(timeout);
+
+    retrieveNowPlaying();
+  }
 
   return {
     init : function(){
       retrieveNowPlaying();
+
+      // hidden feature! click the album art to refresh
+      $('#albumart').on('click', handleAlbumArtClick)
     }
   };
 
