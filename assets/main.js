@@ -44,6 +44,10 @@ var KCRWBuddy = (function(){
 
     // load more data later
     timeout = setTimeout(retrieveNowPlaying, REFRESH_INTERVAL);
+
+    // show everything now that we have data
+    // yeah, this will get called every time, but who cares. it's harmless.
+    $('#now-playing').removeClass('invisible');
   }
 
   function handleResponseError(data){
