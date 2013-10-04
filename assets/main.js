@@ -70,11 +70,18 @@ var KCRWBuddy = (function(){
 
   // correct some things about the parsed data
   function fixNowPlayingData(data){
-    // FIXME: correct the time to be in user's timezone, not Pacific Time
+    // correct the time to be in user's timezone, not America/Los_Angeles.
     // 
+    // i need a way to *interpret* the time in America/Los_Angeles and then 
+    // display it in the local time zone. you'd think this would be easy, but 
+    // it's not due to DST. the simmplest approach seems to be detect DST 
+    // and then hardcode the # hours offset when making a new date.
+    var offset = moment(data.datetime).isDST() ? "-0700" : "-0800";
+    var localtime = new Date(Date.parse(data.datetime + ' GMT ' + offset));
+
     // note: keep time stored as string; easier that way since we're not 
     // doing any further calcs
-    data.datetime = data.datetime;
+    data.datetime = moment(localtime).format('h:mm A');
 
     return data;
   }
