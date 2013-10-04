@@ -67,9 +67,19 @@ textarea {
 
 
 
+#now-playing em { color: #666; font-size: .75em; }
+#now-playing p { margin: 0; }
 
+#albumart { float: left; margin-right: 12px; }
 
-
+#song-line { font-size: 1.4em; }
+#song { font-style: italic; }
+#artist { font-weight: bold; }
+#album-line { font-size: 0.9em; }
+#album { }
+#label { }
+p#datetime-line { font-size: .67em; color: #999; margin-top: .5em; }
+#datetime { }
 
 
 
