@@ -122,7 +122,7 @@ var KCRWBuddy = (function(){
   function displayNowPlaying(data){
     // link to artist website if available
     if (data.website) {
-      $('#artist').html('<a href="' + data.website + '">' + data.artist + '<\/a>');
+      $('#artist').html('<a href="' + data.website + '" target="_blank">' + data.artist + '<\/a>');
     } else {
       $('#artist').html(data.artist);
     }
