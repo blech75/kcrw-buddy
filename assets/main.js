@@ -1,3 +1,29 @@
+/* TODO
+ *
+ *   - link to stores / google search
+ *
+ *   - bigger/better images
+ * 
+ *   - MOAR METADATA!!!! (via other APIs)
+ * 
+ *   - style announcements differently
+ *     E24 Text - #4 - Chris Muckley  by  Chris Muckley
+ *     Break  by  Break / Break   [Break]
+ * 
+ *   - add links to KCRW site, etc.
+ *
+ *   - better design / prettier
+ *
+ *   - mobile friendly
+ *
+ *   - convert into dashboard widget (hopefully same codebase?)
+ *
+ *   - previous songs w/ navigation
+ *
+ *   - saved songs (i have a bigger idea here)
+ *
+ */
+
 var KCRWBuddy = (function(){
   
   // data to pull AJAX data from. this is just an simple apache proxypass 
