@@ -4,6 +4,8 @@ var KCRWBuddy = (function(){
   // directive that passes the request to kcrw.org to avoid cross-domain 
   // issues
   var AJAX_HOSTNAME = 'kcrw-buddy.dev';
+  
+  var DEFAULT_ALBUM_ART = "/images/no_album.jpg";
 
   // let's not be too noisy. KCRW has their web page throttled to every 20s, 
   // so let's do the same.
@@ -92,12 +94,33 @@ var KCRWBuddy = (function(){
 
   // shove the data into our page
   function displayNowPlaying(data){
-    $('#albumart').attr('src', data.albumart);
     $('#artist').html(data.artist);
     $('#song').html(data.song);
-    $('#album').html(data.album);
-    $('#label').html(data.label);
+
+    if (!data.album) {
+      $('#album-info').hide();
+      $('#album').html("");
+    } else {
+      $('#album').html(data.album);
+      $('#album-info').show();
+    }
+
+    // don't show the square parens if there's no label
+    if (!data.label) {
+      $('#label-info').hide();
+      $('#label').html("");
+    } else {
+      $('#label').html(data.label);
+      $('#label-info').show();
+    }
+
     $('#datetime').html(data.datetime);
+
+    if (!data.albumart) {
+      $('#albumart').attr('src', DEFAULT_ALBUM_ART);
+    } else {
+      $('#albumart').attr('src', data.albumart);
+    }
   }
 
 
