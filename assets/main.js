@@ -68,7 +68,7 @@ var KCRWBuddy = (function(){
       label    : markup.children('.label').text(),
       datetime : markup.find('.time span').text(),
       albumart : markup.find('.buy img').attr('src'),
-      website  : ''
+      website  : markup.find('.details a').attr('href')
     };
 
     return song_data;
@@ -94,7 +94,13 @@ var KCRWBuddy = (function(){
 
   // shove the data into our page
   function displayNowPlaying(data){
-    $('#artist').html(data.artist);
+    // link to artist website if available
+    if (data.website) {
+      $('#artist').html('<a href="' + data.website + '">' + data.artist + '<\/a>');
+    } else {
+      $('#artist').html(data.artist);
+    }
+
     $('#song').html(data.song);
 
     if (!data.album) {
