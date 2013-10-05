@@ -5,6 +5,7 @@ var KCRWBuddy = (function(){
   // proxypass directive that passes the request to kcrw.org.
   var AJAX_HOSTNAME = window.location.host;
   
+  // KCRW's default album art image
   var DEFAULT_ALBUM_ART = "/images/no_album.jpg";
 
   // let's not be too noisy. KCRW has their web page throttled to every 20s, 
