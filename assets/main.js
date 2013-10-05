@@ -1,9 +1,9 @@
 var KCRWBuddy = (function(){
   
-  // data to pull AJAX data from. this is just an simple apache proxypass 
-  // directive that passes the request to kcrw.org to avoid cross-domain 
-  // issues
-  var AJAX_HOSTNAME = 'kcrw-buddy.dev';
+  // data to pull AJAX data from. currently, we're pulling from the same host 
+  // to avoid cross-domain issues. this accomplished by a simple apache 
+  // proxypass directive that passes the request to kcrw.org.
+  var AJAX_HOSTNAME = window.location.host;
   
   var DEFAULT_ALBUM_ART = "/images/no_album.jpg";
 
