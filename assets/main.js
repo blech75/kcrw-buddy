@@ -16,10 +16,11 @@ var KCRWBuddy = (function(){
   var timeout = null;
 
   function retrieveNowPlaying(){
-    // values are "Music" or "Simulcast"
+    // values are "Music" (Eclectic 24) or "Simulcast"
     var channel = "Music";
 
-    // channel seems to be the only required parameter to retrieve the now playing data for the "Music" channel
+    // channel seems to be the only required parameter to retrieve the now 
+    // playing data for the "Music" channel
     var request_data = {
       "channel" : channel
       // "dates" : "2013-10-03",
