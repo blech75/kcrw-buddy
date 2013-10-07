@@ -77,18 +77,41 @@ var KCRWBuddy = (function(){
 
   // correct some things about the parsed data
   function fixNowPlayingData(data){
-    // correct the time to be in user's timezone, not America/Los_Angeles.
+    // correct the time to be in user's timezone, not America/Los_Angeles, 
+    // where KCRW is and what their dates are output as.
     // 
     // i need a way to *interpret* the time in America/Los_Angeles and then 
     // display it in the local time zone. you'd think this would be easy, but 
-    // it's not due to DST. the simmplest approach seems to be detect DST 
-    // and then hardcode the # hours offset when making a new date.
-    var offset = moment(data.datetime).isDST() ? "-0700" : "-0800";
-    var localtime = new Date(Date.parse(data.datetime + ' GMT ' + offset));
+    // it's not, due to detecting and accounting for DST.
+    // 
+    // the simplest approach seems to be detect DST and then hardcode the # of 
+    // hours offset when making a new date. this is nearly perfect except 
+    // that during the DST transition, it will not be correct because we're 
+    // testing DST based on *our* timezone, not LA's. at least that's what i 
+    // *think* will happen. needs more testing in any case.
+    // 
+    // also note that the date is output without leading zeros for the hour:
+    // 
+    //   2013-10-07 5:38 am
+    // 
+    // Date.parse can handle this format (in chrome, at least), but 
+    // Date.parse does not work well across browsers. (see 
+    // <http://stackoverflow.com/questions/3085937/>) Instead, we're using 
+    // moment.js and its ability to parse dates according to a specified 
+    // format.
+    // 
+    var date_format = "YYYY-MM-DD h:mm a";
+    var song_start_time = moment(data.datetime, date_format);
 
-    // note: keep time stored as string; easier that way since we're not 
-    // doing any further calcs
-    data.datetime = moment(localtime).format('h:mm A');
+    // LA is -7 hours during DST, and -8 hours at other times
+    var offset = song_start_time.isDST() ? "-0700" : "-0800";
+    
+    // re-parse with the correct GMT offset
+    var localtime = moment(data.datetime + ' GMT' + offset, (date_format + " [GMT]Z"));
+
+    // keep time stored as string; easier that way since we're not doing any 
+    // further calcs
+    data.datetime = localtime.format('h:mm A');
 
     return data;
   }
