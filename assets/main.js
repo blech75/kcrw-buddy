@@ -44,7 +44,7 @@ var KCRWBuddy = (function(){
     song_data = fixNowPlayingData(song_data);
 
     // show the data
-    displayNowPlaying(song_data);
+    displayNowPlayingData(song_data);
 
     // load more data later
     timeout = setTimeout(retrieveNowPlaying, REFRESH_INTERVAL);
@@ -126,7 +126,7 @@ var KCRWBuddy = (function(){
   }
 
   // shove the data into our page
-  function displayNowPlaying(data){
+  function displayNowPlayingData(data){
     // link to artist website if available
     if (data.website) {
       $('#artist').html('<a href="' + data.website + '" target="_blank">' + data.artist + '<\/a>');
