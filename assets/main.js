@@ -15,6 +15,10 @@ var KCRWBuddy = (function(){
   // holds timeout reference so we can cancel it if need be
   var timeout = null;
 
+  // what it says on the tin
+  var current_song_data = null;
+
+
   function retrieveNowPlaying(){
     // values are "Music" (Eclectic 24) or "Simulcast"
     var channel = "Music";
@@ -39,19 +43,46 @@ var KCRWBuddy = (function(){
   }
 
   function handleResponseSuccess(data){
-    // parse and tweak the data
-    var song_data = parseNowPlayingData($(data.message));
-    song_data = fixNowPlayingData(song_data);
 
-    // show the data
-    displayNowPlayingData(song_data);
+    // check for ajax response first
+    if (data.message != "") {
 
-    // load more data later
+      // parse the received data
+      var new_data = parseNowPlayingData($(data.message));
+
+      // fix the timezone and store it as a new attribute for display
+      new_data.display_time = fixTimezone(new_data.datetime).format('h:mm A');
+
+      // get the prev song's start time if it exists
+      var prev_song_start_time = (current_song_data && current_song_data.datetime) ? current_song_data.datetime : "";
+      // console.log("NEW: " + new_data.datetime, "PREV: " + prev_song_start_time);
+
+      // compare previous song's start time to current song's start time to 
+      // determine if song has changed. this should work reasonbly well. 
+      // possibly revisit later and change comparison to use a cryptographic 
+      // hash of all song data.
+      var song_has_changed = (new_data.datetime !== prev_song_start_time);
+
+      // consider our work finalized and assign newly fetched data to our 
+      // current state
+      current_song_data = new_data;
+
+      // update the display only if the data is different from the previous data
+      if (song_has_changed) {
+        console.log("song change detected (" + new_data.display_time + ")");
+        displayNowPlayingData(current_song_data);
+
+        // only fetch artwork if we don't have it, which is generally for new 
+        // songs. in other words, don't fetch if we've already tried and no 
+        // results were returned.
+        // note: this is asynchronous so it's somewhat complicated
+        findLargerArtwork(current_song_data.artist + " " + current_song_data.album);
+      }
+
+    }
+
+    // refresh the data in the not-too-distant future
     timeout = setTimeout(retrieveNowPlaying, REFRESH_INTERVAL);
-
-    // show everything now that we have data
-    // yeah, this will get called every time, but who cares. it's harmless.
-    $('#now-playing').removeClass('invisible');
   }
 
   function handleResponseError(data){
@@ -69,60 +100,110 @@ var KCRWBuddy = (function(){
       album    : markup.children('.album').text(),
       label    : markup.children('.label').text(),
       datetime : markup.find('.time span').text(),
-      time     : null,
       albumart : markup.find('.buy img').attr('src'),
-      website  : markup.find('.details a').attr('href')
+      website  : markup.find('.details a').attr('href'),
+      
+      // these are added after the fact
+      display_time   : null,
+      albumart_hires : null
+      
     };
 
     return song_data;
   }
 
-  // correct some things about the parsed data
-  function fixNowPlayingData(data){
+  // accepts time string in KCRW format, returns moment.js time object
+  function fixTimezone(datetime){
+    // correct the time to be in user's timezone, not America/Los_Angeles, 
+    // where KCRW is and what their dates are output as.
+    // 
+    // i need a way to *interpret* the time in America/Los_Angeles and then 
+    // display it in the local time zone. you'd think this would be easy, but 
+    // it's not, due to detecting and accounting for DST.
+    // 
+    // the simplest approach seems to be detect DST and then hardcode the # of 
+    // hours offset when making a new date. this is nearly perfect except 
+    // that during the DST transition, it will not be correct because we're 
+    // testing DST based on *our* timezone, not LA's. at least that's what i 
+    // *think* will happen. needs more testing in any case.
+    // 
+    // also note that the date is output without leading zeros for the hour:
+    // 
+    //   2013-10-07 5:38 am
+    // 
+    // Date.parse can handle this format (in chrome, at least), but 
+    // Date.parse does not work well across browsers. (see 
+    // <http://stackoverflow.com/questions/3085937/>) Instead, we're using 
+    // moment.js and its ability to parse dates according to a specified 
+    // format.
+    // 
+    var KCRW_DATETIME_FORMAT = "YYYY-MM-DD h:mm a";
+    var song_start_datetime = moment(datetime, KCRW_DATETIME_FORMAT);
 
-    // accepts time string in KCRW format, returns moment.js time object
-    function fixTimezone(datetime){
-      // correct the time to be in user's timezone, not America/Los_Angeles, 
-      // where KCRW is and what their dates are output as.
-      // 
-      // i need a way to *interpret* the time in America/Los_Angeles and then 
-      // display it in the local time zone. you'd think this would be easy, but 
-      // it's not, due to detecting and accounting for DST.
-      // 
-      // the simplest approach seems to be detect DST and then hardcode the # of 
-      // hours offset when making a new date. this is nearly perfect except 
-      // that during the DST transition, it will not be correct because we're 
-      // testing DST based on *our* timezone, not LA's. at least that's what i 
-      // *think* will happen. needs more testing in any case.
-      // 
-      // also note that the date is output without leading zeros for the hour:
-      // 
-      //   2013-10-07 5:38 am
-      // 
-      // Date.parse can handle this format (in chrome, at least), but 
-      // Date.parse does not work well across browsers. (see 
-      // <http://stackoverflow.com/questions/3085937/>) Instead, we're using 
-      // moment.js and its ability to parse dates according to a specified 
-      // format.
-      // 
-      var KCRW_DATETIME_FORMAT = "YYYY-MM-DD h:mm a";
-      var song_start_datetime = moment(datetime, KCRW_DATETIME_FORMAT);
+    // LA is -7 hours during DST, and -8 hours at other times
+    var offset = song_start_datetime.isDST() ? "-0700" : "-0800";
 
-      // LA is -7 hours during DST, and -8 hours at other times
-      var offset = song_start_datetime.isDST() ? "-0700" : "-0800";
+    // re-parse with the correct GMT offset
+    song_start_datetime = moment(datetime + ' GMT' + offset, (KCRW_DATETIME_FORMAT + " [GMT]Z"));
 
-      // re-parse with the correct GMT offset
-      song_start_datetime = moment(datetime + ' GMT' + offset, (KCRW_DATETIME_FORMAT + " [GMT]Z"));
+    return song_start_datetime;
+  }
 
-      return song_start_datetime;
+  function findLargerArtwork(term){
+
+    function queryItunes(term){
+      // docs: http://www.apple.com/itunes/affiliates/resources/documentation/itunes-store-web-service-search-api.html
+      // 
+      $.ajax({
+        'type'     : 'GET',
+        // 'async'    : false,
+        'url'      : 'http://' + AJAX_HOSTNAME + '/search',
+        'data'     : {
+          "term"    : term,
+          "media"   : 'music',
+          "limit"   : 1
+          // "entity"  : 'album',
+          // "output"  : "json", 
+          // "callback" : '',
+          // "country" : 'US',
+          // "lang"    : "EN",
+        },
+        'dataType' : 'json',
+        'success'  : queryItunesSuccess,
+        'error'    : handleResponseError
+      });
     }
 
-    // fix the timezone and store it as a new attribute for display
-    data.time = fixTimezone(data.datetime).format('h:mm A');
-    
+    function queryItunesSuccess(data){
+      // we just requested one item, so check if it exists
+      if (data.results[0]) {
+        // make referencing it easier
+        var results = data.results[0];
 
+        // take the artwork from the first record returned.
+        var large_artwork = results.artworkUrl100;
 
-    return data;
+        // no, silly, we want the larger version of the artwork, please. kthxbai.
+        // 
+        //   http://a2.mzstatic.com/us/r30/Features/4f/ae/9b/dj.prvxtaxv.600x600-75.jpg
+        // 
+        large_artwork = large_artwork.replace(/100x100/, '600x600');
+
+        // set the album art and store a ref to it
+        $('#albumart').attr('src', large_artwork);
+        current_song_data.albumart_hires = large_artwork;
+
+        // link album title to itunes music store
+        $('#album').html("<a href=\"" + results.collectionViewUrl + "\" target=\"_blank\">" + current_song_data.album + "</a>");
+
+      } else {
+        console.log("no artwork found on iTunes music store!");
+        // mark as -1 if we didn't find anything
+        current_song_data.albumart_hires = -1;
+      }
+    }
+
+    queryItunes(term);
   }
 
   // shove the data into our page
@@ -153,13 +234,17 @@ var KCRWBuddy = (function(){
       $('#label-info').show();
     }
 
-    $('#time').html(data.time);
+    $('#time').html(data.display_time);
 
     if (!data.albumart) {
       $('#albumart').attr('src', DEFAULT_ALBUM_ART);
     } else {
       $('#albumart').attr('src', data.albumart);
     }
+
+    // show everything now that we have data.
+    // yeah, this will get called every time, but who cares. it's harmless. 
+    $('#now-playing').removeClass('invisible');
   }
 
   function handleAlbumArtClick() {
