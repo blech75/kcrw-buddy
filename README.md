@@ -11,8 +11,15 @@ If you like KCRW Eclectic 24 then you'll love this.
 
  * MOAR METADATA!!!! (via other APIs)
 
- * style announcements differently (ex: "E24 Text - #4 - Chris Muckley  by  Chris Muckley", "Break" in all fields)
-  
+ * style announcements differently. ex:
+    * "E24 Text - #4 - Chris Muckley"
+    * "E24 Text - #1 - Garth Trinidad"
+    * "Break" in all fields
+
+ * style KCRW special tracks differently (ex: "Live on KCRW")
+
+ * style whitelabel tracks differently
+
  * add links to KCRW site, etc.
 
  * better design / prettier
