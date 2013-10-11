@@ -208,7 +208,9 @@ var KCRWBuddy = (function(){
 
   // shove the data into our page
   function displayNowPlayingData(data){
-    // link to artist website if available
+    // FIXME: handle special cases (breaks, announcements, etc.)
+
+    // link artist name to their website, if available
     if (data.website) {
       $('#artist').html('<a href="' + data.website + '" target="_blank">' + data.artist + '<\/a>');
     } else {
@@ -217,7 +219,12 @@ var KCRWBuddy = (function(){
 
     $('#song').html(data.song);
 
+    // don't show the album line if there's no album data. it's cleaner that 
+    // way.
     if (!data.album) {
+      // FIXME: what about tracks that have no album info yet have label info?
+      // edge case, for sure. maybe the label stanza needs to be combined with
+      // this stanza
       $('#album-info').hide();
       $('#album').html("");
     } else {
@@ -236,6 +243,7 @@ var KCRWBuddy = (function(){
 
     $('#time').html(data.display_time);
 
+    // display default album art if no art is available
     if (!data.albumart) {
       $('#albumart').attr('src', DEFAULT_ALBUM_ART);
     } else {
